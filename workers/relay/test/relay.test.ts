@@ -314,6 +314,17 @@ describe("relay integration", () => {
     expect((await deviceApi(alice, `/v1/mail/${bob.handle}`, { method: "POST", body: { ...envelope, ct: "A".repeat(50_000) } })).status).toBe(413);
   });
 
+  it("rejects empty, null, and deeply nested mail bodies as validation errors", async () => {
+    const alice = await createUser("alice", "open");
+    const bob = await createUser("bob", "open");
+    await becomeFriends(alice, bob);
+    let nested: unknown = { leaf: true };
+    for (let index = 0; index < 4000; index++) nested = { n: nested };
+    expect((await deviceApi(alice, `/v1/mail/${bob.handle}`, { method: "POST" })).status).toBe(400);
+    expect((await deviceApi(alice, `/v1/mail/${bob.handle}`, { method: "POST", body: null })).status).toBe(400);
+    expect((await deviceApi(alice, `/v1/mail/${bob.handle}`, { method: "POST", body: nested })).status).toBe(400);
+  });
+
   it("rejects unsigned, badly signed, and replayed device requests", async () => {
     const alice = await createUser("alice", "open");
     expect((await SELF.fetch("https://example.test/v1/friends")).status).toBe(401);

@@ -371,7 +371,14 @@ async function removeFriend(peer: string, device: DeviceIdentity, env: Env): Pro
 
 async function sendMail(peer: string, value: unknown, device: DeviceIdentity, env: Env): Promise<Response> {
   const pair = await requireActiveFriend(peer, device.handle, env);
-  if (canonicalSize(value) > LIMITS.envelopeBytes) throw new HttpError(413, "envelope_too_large");
+  if (value === null || value === undefined || typeof value !== "object") throw new HttpError(400, "invalid_envelope");
+  let size: number;
+  try {
+    size = canonicalSize(value);
+  } catch {
+    throw new HttpError(400, "invalid_envelope");
+  }
+  if (size > LIMITS.envelopeBytes) throw new HttpError(413, "envelope_too_large");
   const envelope = value as Envelope;
   if (envelope.from !== formatHandleEpoch(device.handle, device.row.key_epoch)) throw new HttpError(400, "invalid_envelope_peers");
   const peerRow = await getHandle(env.DB, peer);
