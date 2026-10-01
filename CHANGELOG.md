@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep delivery receipts from filling a mailbox, so acknowledged mail does not block the next message.
+
 ## 0.2.0 - 2026-09-22
 
 **Highlights:** Receiver-owned friendship permissions control each message direction, while journal recovery and asynchronous protocol checks preserve delivery and audit integrity.
