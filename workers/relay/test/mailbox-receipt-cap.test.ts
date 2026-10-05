@@ -28,21 +28,20 @@ describe("mailbox receipt cap", () => {
     expect(extra.result).toBe("capacity");
   });
 
-  it("drops the oldest receipt instead of rejecting a new one", async () => {
-    const box = mailbox("receipts-evict-oldest");
+  it("rejects a receipt at capacity and keeps the unread oldest one", async () => {
+    const box = mailbox("receipts-reject-at-capacity");
     for (let index = 0; index < 200; index += 1) {
       const receipt = await box.enqueue("peer", `receipt-${index}`, "receipt", "{}", now);
       expect(receipt.result).toBe("queued");
     }
     const extra = await box.enqueue("peer", "receipt-200", "receipt", "{}", now);
-    expect(extra.result).toBe("queued");
+    expect(extra.result).toBe("capacity");
     const pulled = (await box.pull(0)) as {
       entries: Array<{ id: string; kind: "message" | "receipt" }>;
     };
     const receipts = pulled.entries.filter((entry) => entry.kind === "receipt");
     expect(receipts).toHaveLength(200);
-    expect(pulled.entries).toHaveLength(200);
-    expect(pulled.entries.some((entry) => entry.id === "receipt-0")).toBe(false);
-    expect(pulled.entries.at(-1)?.id).toBe("receipt-200");
+    expect(pulled.entries[0]?.id).toBe("receipt-0");
+    expect(pulled.entries.some((entry) => entry.id === "receipt-200")).toBe(false);
   });
 });

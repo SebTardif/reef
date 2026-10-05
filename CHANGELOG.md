@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Keep delivery receipts from filling a mailbox, so acknowledged mail does not block the next message.
+- Keep delivery receipts from filling a mailbox. A full receipt queue returns capacity and leaves unread receipts in place, so acknowledged mail does not block the next message.
 
 ## 0.2.0 - 2026-09-22
 

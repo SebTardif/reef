@@ -69,11 +69,7 @@ export class Mailbox extends DurableObject<Env> {
       const receipts = this.ctx.storage.sql.exec<{ count: number }>(
         "SELECT COUNT(*) AS count FROM entries WHERE kind = 'receipt'",
       ).one().count;
-      if (receipts >= LIMITS.mailboxEntriesPerHandle) {
-        this.ctx.storage.sql.exec(
-          "DELETE FROM entries WHERE kind = 'receipt' AND seq = (SELECT MIN(seq) FROM entries WHERE kind = 'receipt')",
-        );
-      }
+      if (receipts >= LIMITS.mailboxEntriesPerHandle) return { result: "capacity" };
     }
     const seq = this.ctx.storage.sql.exec<{ seq: number }>(
       "INSERT INTO entries(peer, id, kind, payload_json, ts) VALUES (?, ?, ?, ?, ?) RETURNING seq",
